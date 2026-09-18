@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand Psychology — Greygate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/nav.css">
+<style>
+  @font-face{ font-family:'Utendo'; src:url('../assets/fonts/Utendo-Regular.ttf') format('truetype'); font-weight:400; font-display:swap; }
+  @font-face{ font-family:'Utendo'; src:url('../assets/fonts/Utendo-Bold.ttf') format('truetype'); font-weight:700; font-display:swap; }
+  :root{
+    --void:#050505; --ink:#e8e6e2; --ink-dim:#8a8a8d;
+    --ember:#ff8a4c; --ember-soft:#ffbf8f;
+    --font-display:'Orbitron', sans-serif; --font-body:'Utendo', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--void); color:var(--ink); font-family:var(--font-body); overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--ember); color:#050505; }
+  a{ color:inherit; }
+  #bg-canvas{ position:fixed; inset:0; z-index:-2; width:100%; height:100%; background:var(--void); }
+  #bg-vignette{ position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background: radial-gradient(120% 90% at 50% 15%, rgba(255,255,255,0.05), transparent 55%),
+                radial-gradient(140% 100% at 50% 100%, rgba(0,0,0,0.55), transparent 60%); }
+  .site-nav{ position:fixed; top:0; left:0; z-index:60; padding:26px 0 0 28px; }
+  .site-nav img{ height:26px; width:auto; opacity:0.95; }
+
+  .cta{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:999px;
+    border:1px solid rgba(232,230,226,0.18); background:linear-gradient(90deg, rgba(20,20,21,0.9), rgba(20,17,15,0.9));
+    color:var(--ink); overflow:hidden; transition: border-color .35s ease, transform .25s ease; }
+  .cta::before{ content:""; position:absolute; inset:0; background: radial-gradient(60% 140% at 100% 50%, rgba(255,138,76,0.5), transparent 70%); opacity:0.5; transition:opacity .35s ease; }
+  .cta svg{ position:relative; z-index:1; }
+  .cta:hover{ border-color:rgba(255,191,143,0.55); transform:translateY(-1px); }
+  .cta:hover::before{ opacity:0.85; }
+
+  /* ---- Hero image (top of page, full-bleed, 1920x1080 — same full-screen
+     pattern as before, now a static frame instead of video) ---- */
+  .bp-hero-video{ position:relative; height:100vh; width:100%; overflow:hidden; background:#000; }
+  .bp-hero-video img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .bp-hero-video::after{ content:""; position:absolute; inset:0; background:rgba(0,0,0,0.35); z-index:1; }
+  .bp-hero-video-cue{ position:absolute; bottom:6vh; left:50%; transform:translateX(-50%); z-index:2;
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--font-display); font-size:0.65rem; letter-spacing:0.24em; text-transform:uppercase; color:var(--ink-dim);
+    opacity:0.7; }
+  .bp-hero-video-cue .line{ width:26px; height:1px; background:var(--ink-dim); position:relative; overflow:hidden; }
+  .bp-hero-video-cue .line::after{ content:""; position:absolute; inset:0; background:var(--ember); transform:translateX(-100%);
+    animation: scrollcue 1.8s ease-in-out infinite; }
+
+  /* animated wind streaks — a steady breeze drifting left, as if flowing off him,
+     layered over the static image inside the same band the photo's own light-trails occupy */
+  .bp-wind{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1; mix-blend-mode:screen; }
+  .bp-wind span{ position:absolute; left:0; height:2px; width:46vw; border-radius:999px; opacity:0;
+    background:linear-gradient(90deg, transparent, rgba(255,191,143,0.5) 45%, rgba(255,138,76,0.85) 55%, transparent);
+    filter:blur(5px); animation-name:windFlow; animation-timing-function:linear; animation-iteration-count:infinite; }
+  .bp-wind span:nth-child(1){ top:24%; height:3px; width:60vw; filter:blur(7px); animation-duration:16s; animation-delay:0s; }
+  .bp-wind span:nth-child(2){ top:33%; height:2px; width:44vw; filter:blur(4px); animation-duration:12s; animation-delay:-4s; }
+  .bp-wind span:nth-child(3){ top:41%; height:4px; width:70vw; filter:blur(9px); animation-duration:20s; animation-delay:-9s; }
+  .bp-wind span:nth-child(4){ top:29%; height:1.5px; width:38vw; filter:blur(3px); animation-duration:10s; animation-delay:-2s; }
+  .bp-wind span:nth-child(5){ top:47%; height:2px; width:50vw; filter:blur(6px); animation-duration:15s; animation-delay:-7s; }
+  @keyframes windFlow{
+    0%{ transform:translateX(60vw); opacity:0; }
+    12%{ opacity:0.8; }
+    55%{ opacity:0.5; }
+    88%{ opacity:0; }
+    100%{ transform:translateX(-90vw); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){ .bp-wind span{ animation:none; opacity:0; } }
+
+  /* ---- Hero copy ---- */
+  .bp-hero{ min-height:100vh; display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+    padding:16vh 0.5cm 4vh 0.5cm; position:relative; }
+  .bp-eyebrow{ font-family:var(--font-display); font-weight:600; font-size:0.72rem; letter-spacing:0.32em; text-transform:uppercase;
+    color:var(--ember-soft); margin:0 0 22px; opacity:0.85; }
+  .bp-title{ font-family:var(--font-body); font-weight:700; font-size:clamp(2.8rem, 9vw, 7.4rem); line-height:0.98; letter-spacing:-0.01em;
+    color:var(--ink); margin:0 0 30px; }
+  .bp-sub{ font-family:var(--font-body); font-weight:400; font-size:clamp(1.05rem, 2vw, 1.55rem); line-height:1.5; color:var(--ink-dim);
+    max-width:640px; margin:0; }
+  .bp-sub .accent{ color:var(--ember-soft); font-weight:700; }
+  .bp-scroll-cue{ position:absolute; bottom:6vh; left:0.5cm; display:flex; align-items:center; gap:10px;
+    font-family:var(--font-display); font-size:0.65rem; letter-spacing:0.24em; text-transform:uppercase; color:var(--ink-dim);
+    opacity:0.7; }
+  .bp-scroll-cue .line{ width:26px; height:1px; background:var(--ink-dim); position:relative; overflow:hidden; }
+  .bp-scroll-cue .line::after{ content:""; position:absolute; inset:0; background:var(--ember); transform:translateX(-100%);
+    animation: scrollcue 1.8s ease-in-out infinite; }
+  @keyframes scrollcue{ 0%{transform:translateX(-100%);} 50%{transform:translateX(0);} 100%{transform:translateX(100%);} }
+
+  .bp-outro{ min-height:60vh; display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+    padding:6vh 0.5cm 12vh 0.5cm; }
+  .bp-outro p{ font-size:1rem; color:var(--ink-dim); line-height:1.65; max-width:560px; margin:0 0 40px; }
+
+  .next-row{ margin-top:0; padding:26px 0.5cm 0; border-top:1px solid rgba(232,230,226,0.12); display:flex; align-items:center; }
+
+  @media (max-width:640px){
+    .site-nav{ padding:20px 0 0 18px; }
+    .bp-hero{ padding:14vh 0.5cm 4vh 0.5cm; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  <div id="bg-vignette"></div>
+  <header class="site-nav"><a href="../index.html"><img src="../assets/logo.png" alt="Greygate"></a></header>
+
+  <main>
+    <section class="bp-hero-video">
+      <img src="../assets/brand-psychology-hero.jpg" width="1920" height="1080" alt="Brand Psychology">
+      <div class="bp-wind" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="bp-hero-video-cue"><span class="line"></span>Scroll</div>
+    </section>
+
+    <section class="bp-hero">
+      <p class="bp-eyebrow">Brand Psychology</p>
+      <h1 class="bp-title">Brand<br>Psychology</h1>
+      <p class="bp-sub">Control the feel of your brand — <span class="accent">Control the obsession.</span></p>
+      <div class="bp-scroll-cue"><span class="line"></span>Scroll</div>
+    </section>
+
+    <section class="bp-outro">
+      <p>The way a room, a shelf, or a screen holds attention is never accidental — it's engineered. Brand Psychology is where that engineering happens: the cues, contrasts and rhythms that decide whether someone glances or lingers.</p>
+      <a class="cta" href="../index.html#duoPin" aria-label="Back to all services">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M2 7L6.5 2.5M2 7L6.5 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </section>
+  </main>
+
+  <script src="../assets/ambient.js"></script>
+  <script src="../assets/nav.js" data-base="../"></script>
+</body>
+</html>
