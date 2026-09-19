@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hi We Here — Greygate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/nav.css">
+<style>
+  @font-face{ font-family:'Utendo'; src:url('assets/fonts/Utendo-Regular.ttf') format('truetype'); font-weight:400; font-display:swap; }
+  @font-face{ font-family:'Utendo'; src:url('assets/fonts/Utendo-Bold.ttf') format('truetype'); font-weight:700; font-display:swap; }
+  :root{
+    --void:#050505; --ink:#e8e6e2; --ink-dim:#8a8a8d;
+    --ember:#ff8a4c; --ember-soft:#ffbf8f;
+    --font-display:'Orbitron', sans-serif; --font-body:'Utendo', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--void); color:var(--ink); font-family:var(--font-body); overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--ember); color:#050505; }
+  a{ color:inherit; }
+  #bg-canvas{ position:fixed; inset:0; z-index:-2; width:100%; height:100%; background:var(--void); }
+  #bg-vignette{ position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background: radial-gradient(120% 90% at 50% 15%, rgba(255,255,255,0.05), transparent 55%),
+                radial-gradient(140% 100% at 50% 100%, rgba(0,0,0,0.55), transparent 60%); }
+  .site-nav{ position:fixed; top:0; left:0; z-index:60; padding:26px 0 0 calc(28px + 5mm); }
+  .site-nav img{ height:26px; width:auto; opacity:0.95; }
+
+  /* ---- hero ---- */
+  .contact-hero{ min-height:62vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:18vh calc(6vw + 5mm) 6vh; }
+  .contact-hero h1{ font-family:var(--font-display); font-weight:800; font-size:clamp(2.6rem, 7vw, 5.2rem);
+    letter-spacing:0.01em; margin:0 0 20px; }
+  .contact-hero p{ font-size:clamp(1rem, 1.4vw, 1.2rem); color:var(--ink-dim); max-width:520px; line-height:1.6; margin:0 0 30px; }
+  .contact-direct{ display:flex; flex-wrap:wrap; gap:12px 28px; justify-content:center; font-size:0.95rem; }
+  .contact-direct a{ text-decoration:none; color:var(--ink); border-bottom:1px solid rgba(232,230,226,0.28); padding-bottom:2px; transition:color .25s ease, border-color .25s ease; }
+  .contact-direct a:hover{ color:var(--ember-soft); border-color:var(--ember-soft); }
+
+  /* ---- globe, pointed at Zimbabwe ---- */
+  .globe-section{ display:flex; flex-direction:column; align-items:center; text-align:center;
+    padding:2vh calc(6vw + 5mm) 9vh; }
+  .globe-section .eyebrow{ font-family:var(--font-display); font-weight:600; font-size:0.78rem;
+    letter-spacing:0.16em; color:var(--ember-soft); margin:0 0 18px; }
+  .globe-wrap{ position:relative; width:220px; height:220px; margin:0 auto 18px; }
+  .globe-sphere{ position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, rgba(255,255,255,0.09), rgba(255,255,255,0.01) 45%, transparent 60%),
+                radial-gradient(circle at 60% 70%, rgba(0,0,0,0.5), transparent 55%);
+    border:1px solid rgba(232,230,226,0.35);
+    box-shadow:0 0 40px -6px rgba(255,138,76,0.18), inset 0 0 50px rgba(0,0,0,0.6);
+    overflow:hidden;
+  }
+  .globe-sphere .meridian{
+    position:absolute; top:0; left:50%; width:1px; height:100%;
+    border-left:1px solid rgba(232,230,226,0.3);
+    transform-origin:center center;
+    animation: globe-spin 6s ease-in-out infinite;
+  }
+  .globe-sphere .meridian:nth-child(1){ animation-delay:0s; }
+  .globe-sphere .meridian:nth-child(2){ animation-delay:-1s; }
+  .globe-sphere .meridian:nth-child(3){ animation-delay:-2s; }
+  .globe-sphere .meridian:nth-child(4){ animation-delay:-3s; }
+  .globe-sphere .meridian:nth-child(5){ animation-delay:-4s; }
+  .globe-sphere .meridian:nth-child(6){ animation-delay:-5s; }
+  @keyframes globe-spin{
+    0%{ transform:translateX(-50%) scaleX(1); }
+    50%{ transform:translateX(-50%) scaleX(0.04); }
+    100%{ transform:translateX(-50%) scaleX(1); }
+  }
+  .globe-sphere .parallel{ position:absolute; left:6%; width:88%; border-radius:50%;
+    border-top:1px solid rgba(232,230,226,0.16); }
+  .globe-sphere .parallel.p1{ top:24%; height:52%; }
+  .globe-sphere .parallel.p2{ top:38%; height:24%; }
+  .globe-sphere .parallel.eq{ top:50%; height:1px; left:2%; width:96%; border-top:1px solid rgba(232,230,226,0.24); }
+
+  .globe-pin{ position:absolute; top:57%; left:57%; z-index:3; }
+  .globe-pin .dot{ width:7px; height:7px; border-radius:50%; background:var(--ember);
+    box-shadow:0 0 10px 2px rgba(255,138,76,0.8); position:relative; }
+  .globe-pin .ring{ position:absolute; top:50%; left:50%; width:7px; height:7px; border-radius:50%;
+    border:1px solid var(--ember); transform:translate(-50%,-50%); animation:globe-ping 2.4s ease-out infinite; }
+  @keyframes globe-ping{
+    0%{ width:7px; height:7px; opacity:0.9; }
+    100%{ width:38px; height:38px; opacity:0; }
+  }
+  .globe-label{ font-family:var(--font-display); font-weight:600; font-size:1.05rem; margin:0 0 4px; }
+  .globe-sub{ font-size:0.85rem; color:var(--ink-dim); margin:0; }
+
+  /* ---- Liaisons Agents — black aesthetic, ReflectiveCard-inspired motion ---- */
+  .agents-section{ padding:6vh calc(6vw + 5mm) 14vh; background:#000; border-top:1px solid rgba(232,230,226,0.06); border-bottom:1px solid rgba(232,230,226,0.06); }
+  .agents-heading{ text-align:center; max-width:640px; margin:0 auto 8px; }
+  .agents-heading .eyebrow{ font-family:var(--font-display); font-weight:600; font-size:0.78rem; letter-spacing:0.16em; color:var(--ember-soft); margin:0 0 14px; }
+  .agents-heading h2{ font-family:var(--font-display); font-weight:700; font-size:clamp(1.7rem, 3.6vw, 2.6rem); margin:0 0 16px; }
+  .agents-heading p{ color:var(--ink-dim); font-size:1rem; line-height:1.65; margin:0 auto 6vh; max-width:560px; }
+
+  .agents-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:22px; max-width:1180px; margin:0 auto; }
+
+  .agent-card{
+    position:relative; border-radius:14px; overflow:hidden; isolation:isolate;
+    background:#0a0a0b; aspect-ratio:4/5;
+    box-shadow:0 24px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  }
+  .agent-card::before{
+    /* metallic gradient border, masked to just the edge — same technique as
+       ReflectiveCard's .reflective-border */
+    content:""; position:absolute; inset:0; border-radius:14px; padding:1px; z-index:5; pointer-events:none;
+    background:linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.06) 45%, rgba(255,138,76,0.35) 100%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .agent-photo{ position:absolute; inset:0; z-index:1; }
+  .agent-photo img{ width:100%; height:100%; object-fit:cover; display:block; filter:grayscale(0.3) contrast(1.08) brightness(0.9); }
+
+  .agent-noise{ position:absolute; inset:0; z-index:2; opacity:0.5; pointer-events:none; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  /* partial face blur — placeholder for the real treatment once actual agent
+     photos are dropped in; masks roughly the eye-band on a diagonal */
+  .agent-face-blur{
+    position:absolute; z-index:3; pointer-events:none;
+    top:14%; left:0; width:100%; height:26%;
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    clip-path:polygon(0 20%, 100% 0%, 100% 80%, 0% 100%);
+    background:rgba(255,255,255,0.02);
+  }
+
+  .agent-sheen{
+    position:absolute; inset:0; z-index:4; pointer-events:none;
+    background:linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.22) 50%, transparent 58%);
+    transform:translateX(-140%);
+    transition:transform 1.1s cubic-bezier(.16,.84,.44,1);
+  }
+  .agent-card:hover .agent-sheen{ transform:translateX(140%); }
+
+  .agent-overlay{
+    position:absolute; left:0; right:0; bottom:0; z-index:6; padding:18px 18px 16px;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,0.88) 65%);
+  }
+  .agent-role-tag{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-display); font-weight:600;
+    font-size:0.65rem; letter-spacing:0.1em; color:var(--ember-soft); margin-bottom:8px; }
+  .agent-role-tag::before{ content:""; width:5px; height:5px; border-radius:50%; background:var(--ember); box-shadow:0 0 8px 1px rgba(255,138,76,.8); }
+  .agent-name{ font-family:var(--font-display); font-weight:700; font-size:1.05rem; margin:0 0 3px; }
+  .agent-dept{ font-size:0.8rem; color:var(--ink-dim); margin:0; }
+
+  .agents-note{ text-align:center; font-size:0.8rem; color:var(--ink-dim); max-width:520px; margin:5vh auto 0; line-height:1.6; }
+
+  /* ---- find us: radar ping, address, map, socials ---- */
+  .find-section{ padding:10vh calc(6vw + 5mm) 8vh; text-align:center; }
+  .find-section .eyebrow{ font-family:var(--font-display); font-weight:600; font-size:0.78rem;
+    letter-spacing:0.16em; color:var(--ember-soft); margin:0 0 16px; }
+  .find-section h2{ font-family:var(--font-display); font-weight:700; font-size:clamp(1.5rem, 3vw, 2.1rem); margin:0 0 40px; }
+
+  .radar-wrap{ position:relative; width:64px; height:64px; margin:0 auto 30px; display:flex; align-items:center; justify-content:center; }
+  .radar-wrap .core{ width:8px; height:8px; border-radius:50%; background:var(--ember); box-shadow:0 0 10px 2px rgba(255,138,76,.8); z-index:2; }
+  .radar-ring{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,138,76,0.4); animation:radar-pulse 2.6s ease-out infinite; }
+  .radar-ring.r2{ animation-delay:0.9s; }
+  .radar-ring.r3{ animation-delay:1.8s; }
+  @keyframes radar-pulse{
+    0%{ transform:scale(0.15); opacity:0.9; }
+    100%{ transform:scale(1); opacity:0; }
+  }
+
+  .map-card{ max-width:640px; margin:0 auto; border-radius:10px; overflow:hidden;
+    border:1px solid rgba(232,230,226,0.12); box-shadow:0 24px 60px -22px rgba(0,0,0,0.6); }
+  .map-card iframe{ display:block; width:100%; height:320px; border:0; filter:grayscale(0.25) contrast(1.05) brightness(0.92); }
+
+  .find-address{ margin:26px 0 6px; font-size:1rem; color:var(--ink); }
+  .find-address strong{ display:block; font-family:var(--font-display); font-weight:600; font-size:0.95rem; margin-bottom:4px; }
+
+  .find-socials{ margin-top:22px; font-size:0.92rem; }
+  .find-socials .label{ color:var(--ink-dim); margin-right:8px; }
+  .find-socials a{ color:var(--ink); text-decoration:none; border-bottom:1px solid rgba(232,230,226,0.3); padding-bottom:2px; transition:color .25s ease, border-color .25s ease; }
+  .find-socials a:hover{ color:var(--ember-soft); border-color:var(--ember-soft); }
+
+  footer{ text-align:center; padding:6vh calc(6vw + 5mm); font-size:0.8rem; color:var(--ink-dim); }
+
+  @media (max-width:640px){ .site-nav{ padding:20px 0 0 calc(18px + 5mm); } .agents-section{ padding:8vh calc(6vw + 5mm) 10vh; } }
+</style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  <div id="bg-vignette"></div>
+  <header class="site-nav"><a href="index.html"><img src="assets/logo.png" alt="Greygate"></a></header>
+
+  <section class="contact-hero">
+    <h1>Hi, we here.</h1>
+    <p>Tell us what you're building and we'll put you straight through to the right person on the team — no ticket queue, no bot.</p>
+    <div class="contact-direct">
+      <a href="mailto:hello@greygate.studio">hello@greygate.studio</a>
+      <a href="tel:+000000000">+00 000 000 000</a>
+    </div>
+  </section>
+
+  <section class="globe-section">
+    <p class="eyebrow">Where we're based</p>
+    <div class="globe-wrap">
+      <div class="globe-sphere">
+        <span class="meridian"></span><span class="meridian"></span><span class="meridian"></span>
+        <span class="meridian"></span><span class="meridian"></span><span class="meridian"></span>
+        <span class="parallel p1"></span><span class="parallel p2"></span><span class="parallel eq"></span>
+      </div>
+      <div class="globe-pin"><span class="ring"></span><span class="dot"></span></div>
+    </div>
+    <p class="globe-label">Harare, Zimbabwe</p>
+    <p class="globe-sub">Every project, run from right here.</p>
+  </section>
+
+  <section class="agents-section">
+    <div class="agents-heading">
+      <p class="eyebrow">Liaisons</p>
+      <h2>Talk to the person who'll actually run your project.</h2>
+      <p>Every client is handed to a dedicated liaison agent from day one — the same face through concept, build, and handover.</p>
+    </div>
+
+    <div class="agents-grid">
+      <div class="agent-card">
+        <div class="agent-photo"><img src="assets/agents/placeholder-1.jpg" alt="Liaison agent — Residential, placeholder photo"></div>
+        <div class="agent-face-blur"></div>
+        <div class="agent-noise"></div>
+        <div class="agent-sheen"></div>
+        <div class="agent-overlay">
+          <span class="agent-role-tag">Residential</span>
+          <p class="agent-name">Liaison Agent</p>
+          <p class="agent-dept">Homes &amp; private residences</p>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-photo"><img src="assets/agents/placeholder-2.jpg" alt="Liaison agent — Commercial, placeholder photo"></div>
+        <div class="agent-face-blur"></div>
+        <div class="agent-noise"></div>
+        <div class="agent-sheen"></div>
+        <div class="agent-overlay">
+          <span class="agent-role-tag">Commercial</span>
+          <p class="agent-name">Liaison Agent</p>
+          <p class="agent-dept">Retail &amp; hospitality spaces</p>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-photo"><img src="assets/agents/placeholder-3.jpg" alt="Liaison agent — Corporate, placeholder photo"></div>
+        <div class="agent-face-blur"></div>
+        <div class="agent-noise"></div>
+        <div class="agent-sheen"></div>
+        <div class="agent-overlay">
+          <span class="agent-role-tag">Corporate</span>
+          <p class="agent-name">Liaison Agent</p>
+          <p class="agent-dept">Offices &amp; head­quarters</p>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-photo"><img src="assets/agents/placeholder-4.jpg" alt="Liaison agent — New Business, placeholder photo"></div>
+        <div class="agent-face-blur"></div>
+        <div class="agent-noise"></div>
+        <div class="agent-sheen"></div>
+        <div class="agent-overlay">
+          <span class="agent-role-tag">New Business</span>
+          <p class="agent-name">Liaison Agent</p>
+          <p class="agent-dept">First-time enquiries</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="agents-note">Placeholder portraits shown here — swap in real liaison photography and each card will pick up the same partial-blur reveal and sheen sweep automatically.</p>
+  </section>
+
+  <section class="find-section">
+    <p class="eyebrow">Find us</p>
+    <div class="radar-wrap">
+      <span class="radar-ring r1"></span><span class="radar-ring r2"></span><span class="radar-ring r3"></span>
+      <span class="core"></span>
+    </div>
+    <h2>Come see the workshop.</h2>
+
+    <div class="map-card">
+      <iframe src="https://www.google.com/maps?q=26+Connaught+Road,+Avondale,+Harare,+Zimbabwe&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Greygate — 26 Connaught Road, Avondale"></iframe>
+    </div>
+
+    <p class="find-address"><strong>Greygate</strong>26 Connaught Road, Avondale, Harare, Zimbabwe</p>
+
+    <p class="find-socials"><span class="label">Follow along</span><a href="https://instagram.com/greygatecomms" target="_blank" rel="noopener">@greygatecomms</a></p>
+  </section>
+
+  <footer>© 2026 Greygate. Interiors, engineered.</footer>
+
+  <script src="assets/ambient.js"></script>
+  <script src="assets/nav.js" data-base="./"></script>
+</body>
+</html>
