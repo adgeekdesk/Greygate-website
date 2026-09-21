@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Signage — Greygate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/nav.css">
+<style>
+  @font-face{ font-family:'Utendo'; src:url('../assets/fonts/Utendo-Regular.ttf') format('truetype'); font-weight:400; font-display:swap; }
+  @font-face{ font-family:'Utendo'; src:url('../assets/fonts/Utendo-Bold.ttf') format('truetype'); font-weight:700; font-display:swap; }
+  :root{
+    --void:#050505; --ink:#e8e6e2; --ink-dim:#8a8a8d;
+    --ember:#ff8a4c; --ember-soft:#ffbf8f;
+    --font-display:'Orbitron', sans-serif; --font-body:'Utendo', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--void); color:var(--ink); font-family:var(--font-body); overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  ::selection{ background:var(--ember); color:#050505; }
+  a{ color:inherit; }
+  #bg-canvas{ position:fixed; inset:0; z-index:-2; width:100%; height:100%; background:var(--void); }
+  #bg-vignette{ position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background: radial-gradient(120% 90% at 50% 15%, rgba(255,255,255,0.05), transparent 55%),
+                radial-gradient(140% 100% at 50% 100%, rgba(0,0,0,0.55), transparent 60%); }
+  .site-nav{ position:fixed; top:0; left:0; z-index:60; padding:26px 0 0 calc(28px + 5mm); }
+  .site-nav img{ height:26px; width:auto; opacity:0.95; }
+  main{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16vh calc(8vw + 5mm) 10vh; }
+  .wrap{ max-width:680px; }
+  .crumb{ font-size:0.82rem; color:var(--ink-dim); margin-bottom:22px; }
+  .crumb a{ color:var(--ink-dim); text-decoration:none; border-bottom:1px solid rgba(232,230,226,0.25); }
+  .crumb a:hover{ color:var(--ink); border-color:var(--ink); }
+  .index-tag{ font-family:var(--font-body); font-weight:700; font-size:0.8rem; color:var(--ember-soft); letter-spacing:0.04em; margin-bottom:14px; }
+  h1{ font-family:var(--font-display); font-weight:700; font-size:clamp(2rem, 4.8vw, 3.2rem); line-height:1.12; letter-spacing:0.005em; margin:0 0 20px; }
+  .lede{ font-size:1.15rem; color:var(--ink); line-height:1.55; margin:0 0 18px; font-weight:700; font-family:var(--font-body); }
+  .body-copy{ font-size:1.02rem; color:var(--ink-dim); line-height:1.7; margin:0 0 44px; max-width:560px; }
+  .cta{ position:relative; display:inline-flex; align-items:center; gap:12px; padding:15px 26px 15px 22px; border-radius:999px;
+    border:1px solid rgba(232,230,226,0.18); background:linear-gradient(90deg, rgba(20,20,21,0.9), rgba(20,17,15,0.9));
+    color:var(--ink); font-family:var(--font-body); font-size:0.95rem; font-weight:400; text-decoration:none; overflow:hidden;
+    transition: border-color .35s ease, transform .25s ease; }
+  .cta::before{ content:""; position:absolute; inset:0; background: radial-gradient(60% 140% at 100% 50%, rgba(255,138,76,0.5), transparent 70%); opacity:0.5; transition:opacity .35s ease; }
+  .cta span, .cta svg{ position:relative; z-index:1; }
+  .cta:hover{ border-color:rgba(255,191,143,0.55); transform:translateY(-1px); }
+  .cta:hover::before{ opacity:0.85; }
+  .next-row{ margin-top:56px; padding-top:26px; border-top:1px solid rgba(232,230,226,0.12);
+    display:flex; align-items:baseline; gap:10px; font-size:0.9rem; color:var(--ink-dim); }
+  .next-row a{ color:var(--ink); text-decoration:none; font-family:var(--font-body); font-weight:700; }
+  .next-row a:hover{ color:var(--ember-soft); }
+
+  /* ---- work gallery (Space Optimization only) ---- */
+  .gallery-section{ margin-top:8px; }
+  .gallery-caption{ font-family:var(--font-display); font-weight:700; font-size:1.5rem; line-height:1.32; letter-spacing:0.002em; color:var(--ink); margin:0 0 16px; max-width:640px; }
+  .gallery-intro{ font-size:1rem; color:var(--ink-dim); line-height:1.72; margin:0 0 34px; max-width:620px; }
+  .masonry-container{ position:relative; width:100%; }
+  .item-wrapper{ position:absolute; top:0; left:0; will-change:transform,width,height,opacity; cursor:pointer; }
+  .item-media{ position:relative; width:100%; height:100%; border-radius:5px; overflow:hidden; background:#0d0d0e;
+    box-shadow:0 14px 40px -14px rgba(0,0,0,0.55); }
+  .item-media video{ width:100%; height:100%; object-fit:cover; display:block; }
+  .gallery-caption-overlay{ position:absolute; left:0; right:0; bottom:0; z-index:2; padding:10px 12px 10px;
+    display:flex; justify-content:space-between; align-items:baseline; gap:8px;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,0.8)); pointer-events:none; }
+  .g-title{ font-family:var(--font-display); font-weight:600; font-size:0.82rem; color:var(--ink); letter-spacing:0.005em; }
+  .g-year{ font-family:var(--font-body); font-size:0.7rem; color:var(--ink-dim); flex-shrink:0; }
+  .g-play{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.85); z-index:2;
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(90deg, rgba(20,20,21,0.85), rgba(20,17,15,0.85)); border:1px solid rgba(232,230,226,0.22);
+    color:var(--ink); opacity:0; transition:opacity .3s ease, transform .3s ease; pointer-events:none; }
+  .item-wrapper:hover .g-play{ opacity:0.92; transform:translate(-50%,-50%) scale(1); }
+
+  .lightbox{ position:fixed; inset:0; z-index:150; background:rgba(3,3,3,0.94);
+    display:none; align-items:center; justify-content:center; padding:6vh 4vw; }
+  .lightbox.open{ display:flex; }
+  .lightbox video{ max-width:min(92vw, 1100px); max-height:88vh; width:100%; border-radius:4px; background:#000; }
+  .lightbox-close{ position:absolute; top:24px; right:26px; width:40px; height:40px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; background:rgba(20,20,21,0.85);
+    border:1px solid rgba(232,230,226,0.2); color:var(--ink); cursor:pointer; }
+
+  /* ---- Brand Story page ---- */
+  .story-caption{ font-family:var(--font-display); font-weight:700; font-size:1.5rem; line-height:1.32; color:var(--ink); margin:0 0 14px; max-width:620px; }
+  .story-subtext{ font-size:1.02rem; color:var(--ink-dim); line-height:1.65; margin:0 0 30px; max-width:600px; }
+  .story-video{ position:relative; width:100%; max-width:760px; aspect-ratio:16/9; border-radius:6px; overflow:hidden;
+    background:#0d0d0e; border:1px solid rgba(232,230,226,0.1); box-shadow:0 20px 60px -20px rgba(0,0,0,0.6); }
+  .story-video iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .story-credit{ font-size:0.85rem; color:var(--ink-dim); margin:14px 0 34px; }
+  .story-cta{ margin-bottom:10px; }
+
+  @media (max-width:900px){ .item-wrapper{ } }
+  @media (max-width:640px){ .site-nav{ padding:20px 0 0 calc(18px + 5mm); } main{ padding:14vh calc(7vw + 5mm) 8vh; } .gallery-caption{ font-size:1.25rem; } }
+</style>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  <div id="bg-vignette"></div>
+  <header class="site-nav"><a href="../index.html"><img src="../assets/logo.png" alt="Greygate"></a></header>
+  <main>
+    <div class="wrap">
+      <p class="crumb"><a href="../index.html">Greygate</a> &nbsp;/&nbsp; Services</p>
+      <p class="index-tag">08 — 12</p>
+      <h1>3D Signage</h1>
+      <p class="lede">Wayfinding and signage, modelled in place before it's ever fabricated.</p>
+      <p class="body-copy">Dimensional lettering, depth, mounting and lighting are all settled in the render, long before anything gets cut. It means no surprises on install day, and signage that was designed for the wall it's going on, not a generic template.</p>
+
+      <a class="cta" href="../index.html#duoPin">
+        <span>Back to all services</span>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M2 7L6.5 2.5M2 7L6.5 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <div class="next-row">
+        <span>Next discipline</span>
+        <a href="philosophy.html">Philosophy →</a>
+      </div>
+    </div>
+  </main>
+  <script src="../assets/ambient.js"></script>
+  <script src="../assets/nav.js" data-base="../"></script>
+</body>
+</html>
